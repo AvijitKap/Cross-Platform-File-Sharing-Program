@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>File Sharing App</title>
+
+    <!-- External Libraries -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+</head>
+
+<body class="container mt-4">
+    <h2 class="text-center">🚀 Easy File Sharing</h2>
+
+    <!-- QR Code & Connection Info -->
+    <div class="text-center">
+        <p><b>Connect from Phone:</b> Scan the QR Code or visit:</p>
+        <p><a href="http://{{ local_ip }}:5000" target="_blank">http://{{ local_ip }}:5000</a></p>
+        <img src="{{ url_for('static', filename='qrcode.png') }}" alt="QR Code" width="200">
+    </div>
+
+    <!-- File Upload Section -->
+    <h3 class="mt-4">📂 Upload Files</h3>
+    <input type="file" id="fileInput" multiple class="form-control">
+
+    <div id="dropZone" class="border p-3 text-center mt-2 bg-light">
+        Drag & Drop Files Here
+    </div>
+
+    <button onclick="uploadFiles()" class="btn btn-primary mt-2">Upload</button>
+
+    <!-- Upload Progress Bar (Always Visible) -->
+    <div class="progress mt-2">
+        <div id="progressBar" class="progress-bar progress-bar-striped bg-success" style="width: 0%;">0%</div>
+    </div>
+
+    <!-- File List Section -->
+    <h3 class="mt-4">📄 Available Files</h3>
+    <ul id="fileList" class="list-group"></ul>
+
+    <script>
+        // Upload Files to Server
+        function uploadFiles() {
+            let fileInput = document.getElementById("fileInput");
+            let files = fileInput.files;
+            
+            if (files.length === 0) {
+                alert("Please select a file!");
+                return;
+            }
+
+            let formData = new FormData();
+            for (let file of files) {
+                formData.append("files[]", file);
+            }
+
+            // Reset progress bar
+            $("#progressBar").css("width", "0%").text("0%");
+
+            fetch("/upload", {
+                method: "POST",
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                alert(data.message);
+                fetchFiles();
+                $("#progressBar").css("width", "100%").text("Upload Complete ✅");
+            })
+            .catch(error => {
+                alert("Error: " + error);
+                $("#progressBar").css("width", "0%").text("Upload Failed ❌");
+            });
+        }
+
+        // Fetch & Display Uploaded Files
+        function fetchFiles() {
+            fetch("/files")
+            .then(response => response.json())
+            .then(files => {
+                let fileList = document.getElementById("fileList");
+                fileList.innerHTML = "";
+
+                files.forEach(file => {
+                    let li = document.createElement("li");
+                    li.classList.add("list-group-item");
+                    li.innerHTML = `<a href="/download/${file}" download>${file}</a>`;
+                    fileList.appendChild(li);
+                });
+            });
+        }
+
+        // Drag & Drop File Upload
+        document.getElementById("dropZone").addEventListener("dragover", function(e) {
+            e.preventDefault();
+            this.classList.add("bg-warning");
+        });
+
+        document.getElementById("dropZone").addEventListener("dragleave", function() {
+            this.classList.remove("bg-warning");
+        });
+
+        document.getElementById("dropZone").addEventListener("drop", function(e) {
+            e.preventDefault();
+            this.classList.remove("bg-warning");
+
+            let files = e.dataTransfer.files;
+            document.getElementById("fileInput").files = files;
+        });
+
+        fetchFiles();
+    </script>
+</body>
+</html>
