@@ -3,7 +3,7 @@
 <p align="center">
   A simple & efficient file-sharing web app using <b>Flask</b>. <br>
   Upload, list, and download files easily over a local network. <br>
-  A <b>QR Code</b> is generated dynamically to help users access the platform on mobile devices.
+  A <b>QR Code</b> is generated dynamically to help users access the platform on mobile devices..
 </p>
 
 ---
