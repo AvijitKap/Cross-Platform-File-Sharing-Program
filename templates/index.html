@@ -3,54 +3,87 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>File Sharing App</title>
+    <title>🔐 Secure File Sharing</title>
 
-    <!-- External Libraries -->
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <!-- Bootstrap 5 -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+    <style>
+        body {
+            background-color: #1e1e1e;
+            color: white;
+        }
+        .card {
+            background-color: #292929;
+            border: none;
+        }
+        .btn-custom {
+            background-color: #007bff;
+            border: none;
+        }
+        .btn-custom:hover {
+            background-color: #0056b3;
+        }
+        .progress-bar {
+            transition: width 0.4s ease-in-out;
+        }
+    </style>
 </head>
 
 <body class="container mt-4">
-    <h2 class="text-center">🚀 Easy File Sharing</h2>
 
-    <!-- QR Code & Connection Info -->
-    <div class="text-center">
-        <p><b>Connect from Phone:</b> Scan the QR Code or visit:</p>
-        <p><a href="http://{{ local_ip }}:5000" target="_blank">http://{{ local_ip }}:5000</a></p>
-        <img src="{{ url_for('static', filename='qrcode.png') }}" alt="QR Code" width="200">
+    <h2 class="text-center mb-4">🚀 Secure File Sharing</h2>
+
+    <!-- 🔗 QR Code & Connection Info -->
+    <div class="text-center mb-4">
+        <p><b>Access from Phone:</b> Scan the QR Code or visit:</p>
+        <p><a href="http://{{ local_ip }}:5000" class="text-warning" target="_blank">http://{{ local_ip }}:5000</a></p>
+        <img src="{{ url_for('generate_qr_code') }}" alt="QR Code" width="200" class="rounded shadow">
+
     </div>
 
-    <!-- File Upload Section -->
-    <h3 class="mt-4">📂 Upload Files</h3>
-    <input type="file" id="fileInput" multiple class="form-control">
+    <div class="row">
+        <!-- 📂 File Upload Section -->
+        <div class="col-md-6">
+            <div class="card p-4">
+                <h4 style="color: white;">📤 Upload Files</h4>
+                <input type="password" id="uploadPassword" class="form-control mb-2" placeholder="Enter encryption password">
+                <input type="file" id="fileInput" multiple class="form-control mb-2">
+                <button onclick="uploadFiles()" class="btn btn-custom w-100">Upload</button>
 
-    <div id="dropZone" class="border p-3 text-center mt-2 bg-light">
-        Drag & Drop Files Here
+                <div class="progress mt-3">
+                    <div id="progressBar" class="progress-bar progress-bar-striped bg-success" style="width: 0%;">0%</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 📥 File Download Section -->
+        <div class="col-md-6">
+            <div class="card p-4">
+                <h4 style="color: white;">📄 Available Files</h4>
+                <ul id="fileList" class="list-group mb-2"></ul>
+                <input type="password" id="downloadPassword" class="form-control mb-2" placeholder="Enter decryption password">
+                <button onclick="downloadSelected()" class="btn btn-custom w-100">Download Selected</button>
+            </div>
+        </div>
     </div>
-
-    <button onclick="uploadFiles()" class="btn btn-primary mt-2">Upload</button>
-
-    <!-- Upload Progress Bar (Always Visible) -->
-    <div class="progress mt-2">
-        <div id="progressBar" class="progress-bar progress-bar-striped bg-success" style="width: 0%;">0%</div>
-    </div>
-
-    <!-- File List Section -->
-    <h3 class="mt-4">📄 Available Files</h3>
-    <ul id="fileList" class="list-group"></ul>
 
     <script>
-        // Upload Files to Server
+        // 📤 Upload Files to Server
         function uploadFiles() {
+            let password = document.getElementById("uploadPassword").value;
             let fileInput = document.getElementById("fileInput");
             let files = fileInput.files;
-            
-            if (files.length === 0) {
-                alert("Please select a file!");
+
+            if (!password) {
+                alert("Enter a password for encryption!");
                 return;
             }
 
             let formData = new FormData();
+            formData.append("password", password);
+
             for (let file of files) {
                 formData.append("files[]", file);
             }
@@ -58,56 +91,70 @@
             // Reset progress bar
             $("#progressBar").css("width", "0%").text("0%");
 
-            fetch("/upload", {
-                method: "POST",
-                body: formData
-            })
-            .then(response => response.json())
-            .then(data => {
-                alert(data.message);
-                fetchFiles();
-                $("#progressBar").css("width", "100%").text("Upload Complete ✅");
-            })
-            .catch(error => {
-                alert("Error: " + error);
-                $("#progressBar").css("width", "0%").text("Upload Failed ❌");
-            });
+            fetch("/upload", { method: "POST", body: formData })
+                .then(response => response.json())
+                .then(data => {
+                    alert(data.message);
+                    fetchFiles();
+                    $("#progressBar").css("width", "100%").text("Upload Complete ✅");
+                })
+                .catch(error => {
+                    alert("Error: " + error);
+                    $("#progressBar").css("width", "0%").text("Upload Failed ❌");
+                });
         }
 
-        // Fetch & Display Uploaded Files
+        // 📂 Fetch & Display Uploaded Files
         function fetchFiles() {
             fetch("/files")
-            .then(response => response.json())
-            .then(files => {
-                let fileList = document.getElementById("fileList");
-                fileList.innerHTML = "";
+                .then(response => response.json())
+                .then(files => {
+                    let fileList = document.getElementById("fileList");
+                    fileList.innerHTML = "";
 
-                files.forEach(file => {
-                    let li = document.createElement("li");
-                    li.classList.add("list-group-item");
-                    li.innerHTML = `<a href="/download/${file}" download>${file}</a>`;
-                    fileList.appendChild(li);
+                    files.forEach(file => {
+                        let li = document.createElement("li");
+                        li.classList.add("list-group-item", "d-flex", "justify-content-between", "align-items-center");
+                        li.innerHTML = `
+                            <span>${file}</span>
+                            <button class="btn btn-sm btn-success" onclick="downloadFile('${file}')">⬇ Download</button>
+                        `;
+                        fileList.appendChild(li);
+                    });
                 });
-            });
         }
 
-        // Drag & Drop File Upload
-        document.getElementById("dropZone").addEventListener("dragover", function(e) {
-            e.preventDefault();
-            this.classList.add("bg-warning");
-        });
+        // 📥 Download File
+        function downloadFile(filename) {
+            let password = document.getElementById("downloadPassword").value;
 
-        document.getElementById("dropZone").addEventListener("dragleave", function() {
-            this.classList.remove("bg-warning");
-        });
+            if (!password) {
+                alert("Enter password to decrypt!");
+                return;
+            }
 
-        document.getElementById("dropZone").addEventListener("drop", function(e) {
-            e.preventDefault();
-            this.classList.remove("bg-warning");
+            let formData = new FormData();
+            formData.append("password", password);
 
-            let files = e.dataTransfer.files;
-            document.getElementById("fileInput").files = files;
-        });
+            fetch(`/download/${filename}`, { method: "POST", body: formData })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error("Incorrect password or file error");
+                    }
+                    return response.blob();
+                })
+                .then(blob => {
+                    let a = document.createElement("a");
+                    a.href = URL.createObjectURL(blob);
+                    a.download = filename;
+                    document.body.appendChild(a);
+                    a.click();
+                    a.remove();
+                })
+                .catch(error => {
+                    alert("Error: " + error);
+                });
+        }
 
         fetchFiles();
     </script>
