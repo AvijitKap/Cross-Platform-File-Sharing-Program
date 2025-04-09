@@ -1,65 +1,118 @@
-<h1 align="center">🚀 Cross-Platform File Sharing</h1>
+# 🔐 Secure File Sharing with Password Encryption
 
-<p align="center">
-  A simple & efficient file-sharing web app using <b>Flask</b>. <br>
-  Upload, list, and download files easily over a local network. <br>
-  A <b>QR Code</b> is generated dynamically to help users access the platform on mobile devices..
-</p>
+A simple and secure Flask web app that allows users to **upload, encrypt, download, and decrypt files** using a **password**. It also provides a **QR code** to access the app locally on other devices like your phone.
 
 ---
 
-## 🔥 Features
+## 🚀 Features
 
-✅ Upload multiple files at once  
-✅ Drag & Drop support for easy file uploads  
-✅ Download files from any connected device  
-✅ Auto-generated **QR Code** for quick access  
-✅ Responsive UI with **Bootstrap**  
+- 🔒 AES Encryption/Decryption using user-defined password
+- 📤 Upload multiple files and encrypt them on the server
+- 📥 Download files after secure decryption
+- 🌐 Access from other devices via QR code and local IP
+- 🧠 Flask backend with Bootstrap 5 frontend
+- 🔐 PBKDF2HMAC key derivation with random salt for each file
 
 ---
 
-## 📦 Installation
+## 🛠️ Setup Instructions
 
-### 1️⃣ Clone the Repository
+### 1. Clone the Repository
+
 ```bash
-git clone https://github.com/YourGitHubUsername/cross-file-sharing.git
-cd cross-file-sharing
+git clone https://github.com/yourusername/secure-file-sharing.git
+cd secure-file-sharing
 ```
 
-### 2️⃣ Install Dependencies
+### 2. Create a Virtual Environment (Optional but recommended)
+
 ```bash
-pip install flask qrcode pyqrcode pillow
+python -m venv venv
+source venv/bin/activate  # Windows: venv\Scripts\activate
 ```
 
-### 3️⃣ Run the Application
+### 3. Install Dependencies
+
+```bash
+pip install -r requirements.txt
+```
+
+Or manually install:
+
+```bash
+pip install flask pyqrcode cryptography
+```
+
+---
+
+## ▶️ Run the App
+
 ```bash
 python app.py
 ```
 
-🚀 The server will start at **http://your-local-ip:5000**
+Then open [http://127.0.0.1:5000](http://127.0.0.1:5000) in your browser.
+
+Or scan the QR code to access from your phone.
 
 ---
 
-## 📲 Access on Mobile
-📌 **Scan the QR Code** displayed on the web UI or manually enter **http://your-local-ip:5000** in your phone’s browser.
+## 📂 Project Structure
 
+```
+secure-file-sharing/
+├── app.py
+├── templates/
+│   └── index.html
+├── uploads/                # Stores encrypted files
 
----
-
-## 📜 API Endpoints
-
-| Endpoint           | Method | Description                        |
-|--------------------|--------|------------------------------------|
-| `/`               | GET    | Load the main web UI              |
-| `/upload`         | POST   | Upload one or multiple files      |
-| `/files`          | GET    | List all uploaded files           |
-| `/download/<filename>` | GET    | Download a specific file         |
+```
 
 ---
 
-## 🎨 Tech Stack
-<p align="center">
-  <img src="https://img.shields.io/badge/Flask-000000?style=for-the-badge&logo=flask&logoColor=white">
-  <img src="https://img.shields.io/badge/Python-FFD43B?style=for-the-badge&logo=python&logoColor=blue">
-  <img src="https://img.shields.io/badge/Bootstrap-563D7C?style=for-the-badge&logo=bootstrap&logoColor=white">
-</p>
+## 📦 API Endpoints
+
+| Endpoint                | Method | Description                      |
+|-------------------------|--------|----------------------------------|
+| `/`                     | GET    | Main web UI                      |
+| `/upload`               | POST   | Upload and encrypt files         |
+| `/files`                | GET    | List all uploaded files          |
+| `/download/<filename>`  | POST   | Decrypt and download a file      |
+| `/qrcode`               | GET    | Get QR code for local access     |
+
+---
+
+## 🔑 How It Works
+
+- File is encrypted with AES-CBC using a key derived from the password.
+- A random `salt` and `IV` are generated per file.
+- Encrypted data = `salt + iv + ciphertext`.
+- Files are decrypted using the same password.
+- If password is incorrect, decryption fails.
+
+---
+
+## 🔐 Security Notes
+
+- Passwords are never stored anywhere.
+- Files are encrypted in-place using AES with PKCS7 padding.
+- Derived keys use SHA-256 and 100,000 PBKDF2 iterations.
+
+---
+
+## ✅ Future Improvements
+
+- 🧾 File metadata preview
+- 🗑️ File delete option
+- 🔃 Drag and drop support
+- 🔁 Real-time socket updates
+
+---
+
+## 📄 License
+
+Licensed under the MIT License.
+
+---
+
+Made with ❤️ by [Avijit]
