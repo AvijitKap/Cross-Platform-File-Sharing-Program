@@ -148,5 +148,11 @@ def download_file(filename):
         return jsonify({"error": "Incorrect password or file corrupted"}), 400
 
 # 🚀 Run Flask Server
-if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=5000, debug=True)
+from flask import Flask, render_template
+
+app = Flask(__name__)
+
+@app.route("/")
+def home():
+    return "App Working on Vercel"
+
