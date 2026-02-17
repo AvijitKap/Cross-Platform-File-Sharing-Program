@@ -13,8 +13,10 @@ from cryptography.hazmat.backends import default_backend
 from werkzeug.utils import secure_filename
 
 app = Flask(__name__)
+app.debug = False
 
-UPLOAD_FOLDER = os.path.join(os.getcwd(), "uploads")
+
+UPLOAD_FOLDER = "/tmp"
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 app.config["UPLOAD_FOLDER"] = UPLOAD_FOLDER
 
@@ -82,8 +84,7 @@ def decrypt_file(file_path, password):
 # 🌐 Generate QR Code dynamically
 @app.route("/qrcode")
 def generate_qr_code():
-    local_ip = get_local_ip()
-    url = f"http://{local_ip}:5000"
+    url = request.host_url
     qr = pyqrcode.create(url)
 
     buffer = io.BytesIO()
@@ -147,12 +148,4 @@ def download_file(filename):
     except Exception:
         return jsonify({"error": "Incorrect password or file corrupted"}), 400
 
-# 🚀 Run Flask Server
-from flask import Flask, render_template
-
-app = Flask(__name__)
-
-@app.route("/")
-def home():
-    return "App Working on Vercel"
 
